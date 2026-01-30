@@ -1,0 +1,12 @@
+{
+    "name": "Maya1",
+    "voice_presets": [],
+    "emotion_tags": [
+        "<laugh>", "<laugh_harder>", "<sigh>", "<chuckle>", "<gasp>",
+        "<angry>", "<excited>", "<whisper>", "<cry>", "<scream>",
+        "<sing>", "<snort>", "<exhale>", "<gulp>", "<giggle>",
+        "<sarcastic>", "<curious>"
+    ],
+    "supports_description": true,
+    "supports_reference_audio": false
+}

@@ -1,0 +1,10 @@
+{
+    "name": "Orpheus-3B",
+    "voice_presets": ["tara", "leah", "jess", "leo", "dan", "mia", "zac", "zoe"],
+    "emotion_tags": [
+        "<laugh>", "<chuckle>", "<sigh>", "<cough>",
+        "<sniffle>", "<groan>", "<yawn>", "<gasp>"
+    ],
+    "supports_description": false,
+    "supports_reference_audio": false
+}

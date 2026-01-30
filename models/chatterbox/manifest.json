@@ -1,0 +1,7 @@
+{
+    "name": "Chatterbox",
+    "voice_presets": [],
+    "emotion_tags": ["[laugh]", "[cough]", "[chuckle]", "[sniffle]", "[sigh]"],
+    "supports_description": false,
+    "supports_reference_audio": true
+}

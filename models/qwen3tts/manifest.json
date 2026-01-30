@@ -1,0 +1,7 @@
+{
+    "name": "Qwen3-TTS",
+    "voice_presets": [],
+    "emotion_tags": [],
+    "supports_description": true,
+    "supports_reference_audio": false
+}

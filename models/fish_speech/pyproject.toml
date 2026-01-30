@@ -1,0 +1,10 @@
+[project]
+name = "tts-compare-fish-speech"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "fish-speech>=0.1.0",
+    "soundfile>=0.13.1",
+    "numpy",
+    "torch",
+]

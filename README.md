@@ -1,4 +1,4 @@
-# MayaLearn (tts-compare)
+# tts-compare (tts-compare)
 
 A side-by-side comparison framework for open-source text-to-speech models. Provides an interactive terminal UI to generate speech from the same input text across multiple models and compare quality, latency, and features.
 
@@ -28,8 +28,8 @@ A side-by-side comparison framework for open-source text-to-speech models. Provi
 
 ```bash
 # Clone with submodules (CosyVoice)
-git clone --recurse-submodules https://github.com/<your-repo>/MayaLearn.git
-cd MayaLearn
+git clone --recurse-submodules https://github.com/<your-repo>/tts-compare.git
+cd tts-compare
 
 # Install root dependencies (Textual TUI)
 uv sync

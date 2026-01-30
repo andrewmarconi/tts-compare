@@ -1,0 +1,7 @@
+{
+    "name": "CosyVoice 2",
+    "voice_presets": [],
+    "emotion_tags": ["[laughter]"],
+    "supports_description": true,
+    "supports_reference_audio": true
+}

@@ -1,0 +1,11 @@
+[project]
+name = "tts-compare-xtts"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "coqui-tts",
+    "soundfile>=0.13.1",
+    "numpy",
+    "numba>=0.60.0",
+    "librosa>=0.10.2",
+]
