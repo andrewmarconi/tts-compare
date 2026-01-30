@@ -1,5 +1,6 @@
 {
     "name": "Orpheus-3B",
+    "platforms": ["linux"],
     "voice_presets": ["tara", "leah", "jess", "leo", "dan", "mia", "zac", "zoe"],
     "emotion_tags": [
         "<laugh>", "<chuckle>", "<sigh>", "<cough>",

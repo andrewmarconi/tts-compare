@@ -7,6 +7,7 @@ import asyncio
 import json
 import os
 import re
+import sys
 import time
 from pathlib import Path
 
@@ -48,6 +49,14 @@ DEFAULT_TEXT = (
 
 def discover_models() -> list[dict]:
     """Find all model directories with manifest.json and app.py."""
+    # Detect current platform
+    if sys.platform.startswith("linux"):
+        current_platform = "linux"
+    elif sys.platform == "darwin":
+        current_platform = "macos"
+    else:
+        current_platform = "other"
+
     models = []
     if not MODELS_DIR.is_dir():
         return models
@@ -57,6 +66,11 @@ def discover_models() -> list[dict]:
         if entry.is_dir() and manifest_path.exists() and app_path.exists():
             with open(manifest_path) as f:
                 manifest = json.load(f)
+
+            # Skip if platforms specified and current platform not supported
+            if "platforms" in manifest and current_platform not in manifest["platforms"]:
+                continue
+
             manifest["dir_name"] = entry.name
             models.append(manifest)
     return models
