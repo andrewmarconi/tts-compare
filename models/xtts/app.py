@@ -21,7 +21,12 @@ def generate(text: str, reference_audio_path: str, output_path: str) -> str:
 
     t_load = time.perf_counter()
     print("Loading XTTS v2...", file=sys.stderr)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if torch.cuda.is_available():
+        device = "cuda"
+    elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
     tts = TTS("tts_models/multilingual/multi-dataset/xtts_v2").to(device)
     load_ms = (time.perf_counter() - t_load) * 1000
 

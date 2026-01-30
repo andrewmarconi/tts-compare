@@ -18,7 +18,12 @@ CHECKPOINT_PATH = os.environ.get(
     "FISH_CHECKPOINT", "checkpoints/openaudio-s1-mini"
 )
 CODEC_PATH = os.path.join(CHECKPOINT_PATH, "codec.pth")
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+if torch.cuda.is_available():
+    DEVICE = "cuda"
+elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+    DEVICE = "mps"
+else:
+    DEVICE = "cpu"
 PRECISION = torch.bfloat16
 
 

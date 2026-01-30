@@ -11,6 +11,14 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from snac import SNAC
 
+
+def _get_device() -> str:
+    if torch.cuda.is_available():
+        return "cuda"
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
 from codec import (
     SAMPLE_RATE,
     CODE_END_TOKEN_ID,
@@ -37,16 +45,15 @@ def generate(text: str, description: str, output_path: str) -> str:
             print("Then run again to re-download.", file=sys.stderr)
         raise
 
+    device = _get_device()
+
     print("Loading SNAC decoder...", file=sys.stderr)
-    snac_model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval()
-    if torch.cuda.is_available():
-        snac_model = snac_model.to("cuda")
+    snac_model = SNAC.from_pretrained("hubertsiuzdak/snac_24khz").eval().to(device)
     load_ms = (time.perf_counter() - t_load) * 1000
 
     prompt = build_prompt(tokenizer, description or "", text)
     inputs = tokenizer(prompt, return_tensors="pt")
-    if torch.cuda.is_available():
-        inputs = {k: v.to("cuda") for k, v in inputs.items()}
+    inputs = {k: v.to(device) for k, v in inputs.items()}
 
     t_infer = time.perf_counter()
     print("Generating speech...", file=sys.stderr)
@@ -72,7 +79,6 @@ def generate(text: str, description: str, output_path: str) -> str:
 
     print("Decoding audio with SNAC...", file=sys.stderr)
     levels = unpack_snac_from_7(snac_tokens)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
     codes_tensor = [
         torch.tensor(level, dtype=torch.long, device=device).unsqueeze(0)
         for level in levels

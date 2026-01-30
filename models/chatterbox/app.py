@@ -7,6 +7,15 @@ import time
 
 import numpy as np
 import soundfile as sf
+import torch
+
+
+def _get_device() -> str:
+    if torch.cuda.is_available():
+        return "cuda"
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
 
 
 def generate(text: str, reference_audio_path: str, output_path: str) -> str:
@@ -14,7 +23,7 @@ def generate(text: str, reference_audio_path: str, output_path: str) -> str:
 
     t_load = time.perf_counter()
     print("Loading Chatterbox...", file=sys.stderr)
-    model = ChatterboxTTS.from_pretrained(device="cuda")
+    model = ChatterboxTTS.from_pretrained(device=_get_device())
     load_ms = (time.perf_counter() - t_load) * 1000
 
     kwargs: dict = {"text": text, "exaggeration": 0.5}

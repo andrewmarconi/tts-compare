@@ -1,4 +1,4 @@
-# tts-compare (tts-compare)
+# tts-compare
 
 A side-by-side comparison framework for open-source text-to-speech models. Provides an interactive terminal UI to generate speech from the same input text across multiple models and compare quality, latency, and features.
 

@@ -347,7 +347,9 @@ class ExecutionScreen(Screen):
         env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"}
         proc = await asyncio.create_subprocess_exec(
             "uv", "run", "python", "-c",
-            "import gc; gc.collect(); import torch; torch.cuda.empty_cache()",
+            "import gc; gc.collect(); import torch;"
+            " torch.cuda.empty_cache() if torch.cuda.is_available() else None;"
+            " torch.mps.empty_cache() if hasattr(torch, 'mps') and torch.backends.mps.is_available() else None",
             cwd=str(model_dir),
             env=env,
             stdout=asyncio.subprocess.DEVNULL,

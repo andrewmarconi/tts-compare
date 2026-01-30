@@ -9,6 +9,15 @@ import numpy as np
 import soundfile as sf
 
 
+def _get_device() -> str:
+    import torch
+    if torch.cuda.is_available():
+        return "cuda:0"
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
+
+
 def generate(text: str, description: str, output_path: str) -> str:
     import torch
     from qwen_tts import Qwen3TTSModel
@@ -17,7 +26,7 @@ def generate(text: str, description: str, output_path: str) -> str:
     print("Loading Qwen3-TTS...", file=sys.stderr)
     model = Qwen3TTSModel.from_pretrained(
         "Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign",
-        device_map="cuda:0",
+        device_map=_get_device(),
         dtype=torch.bfloat16,
     )
     load_ms = (time.perf_counter() - t_load) * 1000
