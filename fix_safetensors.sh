@@ -23,12 +23,15 @@ fix_model() {
     fi
 
     echo "[$model_name] Re-downloading using huggingface-cli..."
-    if command -v huggingface-cli &> /dev/null; then
+    if command -v uvx &> /dev/null; then
+        uvx hf download "$model_id" --resume-download
+        echo "[$model_name] ✓ Download complete"
+    elif command -v huggingface-cli &> /dev/null; then
         huggingface-cli download "$model_id" --resume-download
         echo "[$model_name] ✓ Download complete"
     else
-        echo "[$model_name] ⚠ huggingface-cli not found. Install with:"
-        echo "  pip install huggingface_hub[cli]"
+        echo "[$model_name] ⚠ huggingface-cli not found. Run with:"
+        echo "  uvx hf download $model_id --resume-download"
         echo "[$model_name] Will download automatically on next run"
     fi
 }
@@ -63,6 +66,5 @@ echo "2. If errors persist, download may be timing out"
 echo "3. Check your internet connection and try again"
 echo ""
 echo "For manual Maya1 download:"
-echo "  pip install huggingface_hub[cli]"
-echo "  huggingface-cli download maya-research/maya1"
+echo "  uvx hf download maya-research/maya1"
 echo ""

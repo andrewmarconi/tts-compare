@@ -29,7 +29,7 @@ def generate(text: str, voice_preset: str, output_path: str) -> str:
         engine_args = AsyncEngineArgs(
             model=self.model_name,
             dtype=self.dtype,
-            gpu_memory_utilization=0.6,
+            gpu_memory_utilization=0.85,
         )
         return AsyncLLMEngine.from_engine_args(engine_args)
     OrpheusModel._setup_engine = _patched_setup

@@ -2,8 +2,6 @@
 # Pre-download script — downloads model weights for all platform-compatible models
 # Run this after setup_models.sh to avoid download delays during first inference
 
-set -e
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 MODELS_DIR="$SCRIPT_DIR/models"
 OUTPUT_DIR="$SCRIPT_DIR/output"
@@ -23,9 +21,21 @@ echo ""
 echo "This will download model weights (~15-20 GB total)."
 echo "Downloads happen in parallel where possible."
 echo "Errors are logged but don't stop the script."
+echo "Press Ctrl+C once to skip a model, twice quickly to exit."
+echo "Use --force to re-download models that were previously successful."
 echo ""
 
+FORCE=0
+if [ "${1:-}" = "--force" ]; then
+    FORCE=1
+fi
+
 mkdir -p "$OUTPUT_DIR"
+
+# Allow Ctrl+C to skip current model (press twice quickly to exit)
+SKIP_CURRENT=0
+LAST_INT_TIME=0
+trap 'now=$(date +%s); if [ $((now - LAST_INT_TIME)) -le 2 ]; then echo ""; echo "Exiting..."; exit 1; fi; LAST_INT_TIME=$now; SKIP_CURRENT=1; echo ""; echo "[Skipping current model... press Ctrl+C again within 2s to exit]"' INT
 
 # Test input for inference
 TEST_TEXT="Hello world"
@@ -35,6 +45,12 @@ download_model() {
     local model_dir=$1
     local model_name=$2
     local display_name=$3
+
+    # Skip if already downloaded (unless --force)
+    if [ "$FORCE" -eq 0 ] && [ -f "$model_dir/.downloaded" ]; then
+        echo "[$model_name] Already downloaded (use --force to re-download)"
+        return 3
+    fi
 
     echo "[$model_name] Downloading..."
 
@@ -53,14 +69,46 @@ download_model() {
 EOF
 )
 
-    # Run model to trigger download
+    # Run model to trigger download, showing progress from stderr
     cd "$model_dir"
-    if echo "$params" | timeout 300 uv run python app.py > /dev/null 2>&1; then
+    local log_file="$OUTPUT_DIR/.preload_${model_name}.log"
+    SKIP_CURRENT=0
+
+    echo "$params" | timeout 600 uv run python app.py > /dev/null 2> >(
+        # Show download progress lines (from huggingface_hub, pip, etc.) while filtering noise
+        while IFS= read -r line; do
+            # Show lines with download progress indicators
+            if echo "$line" | grep -qiE '%|download|fetch|pulling|cloning|resolving|bytes'; then
+                printf "\r\033[K  [$model_name] %s" "$(echo "$line" | tail -c 120)"
+            fi
+            echo "$line" >> "$log_file"
+        done
+        printf "\r\033[K"
+    ) &
+    local pid=$!
+
+    # Wait for process, checking for skip signal
+    while kill -0 "$pid" 2>/dev/null; do
+        if [ "$SKIP_CURRENT" -eq 1 ]; then
+            kill -- -"$pid" 2>/dev/null || kill "$pid" 2>/dev/null
+            wait "$pid" 2>/dev/null
+            echo "[$model_name] ⊘ Skipped by user"
+            rm -f "$output_path"
+            return 2
+        fi
+        sleep 0.5
+    done
+
+    wait "$pid"
+    local exit_code=$?
+
+    if [ "$exit_code" -eq 0 ]; then
         echo "[$model_name] ✓ Downloaded successfully"
-        rm -f "$output_path"  # Clean up test output
+        touch "$model_dir/.downloaded"
+        rm -f "$output_path" "$log_file"
         return 0
     else
-        echo "[$model_name] ✗ Download failed or timed out (may require manual setup)"
+        echo "[$model_name] ✗ Download failed or timed out (see $log_file for details)"
         return 1
     fi
 }
@@ -69,6 +117,8 @@ EOF
 total=0
 successful=0
 failed=0
+skipped=0
+cached=0
 
 for model_dir in "$MODELS_DIR"/*/; do
     model_name="$(basename "$model_dir")"
@@ -107,11 +157,13 @@ except Exception:
     echo ""
     echo "--- $display_name ---"
 
-    if download_model "$model_dir" "$model_name" "$display_name"; then
-        successful=$((successful + 1))
-    else
-        failed=$((failed + 1))
-    fi
+    download_model "$model_dir" "$model_name" "$display_name"
+    case $? in
+        0) successful=$((successful + 1)) ;;
+        2) skipped=$((skipped + 1)) ;;
+        3) cached=$((cached + 1)) ;;
+        *) failed=$((failed + 1)) ;;
+    esac
 done
 
 # Clean up any remaining test files
@@ -123,6 +175,8 @@ echo "  Download Summary"
 echo "============================================"
 echo "  Total models: $total"
 echo "  ✓ Successful: $successful"
+echo "  ● Already cached: $cached"
+echo "  ⊘ Skipped: $skipped"
 echo "  ✗ Failed: $failed"
 echo ""
 

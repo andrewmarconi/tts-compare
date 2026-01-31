@@ -34,6 +34,9 @@ A side-by-side comparison framework for open-source text-to-speech models. Provi
 git clone --recurse-submodules https://github.com/andrewmarconi/tts-compare.git
 cd tts-compare
 
+# If you already cloned without --recurse-submodules:
+git submodule update --init --recursive
+
 # Install root dependencies (Textual TUI)
 uv sync
 
@@ -86,13 +89,12 @@ Most models download their weights automatically on first run. Some require manu
 Fish Speech requires downloading the checkpoint manually:
 
 ```bash
-pip install huggingface_hub[cli]
 cd models/fish_speech
-huggingface-cli download fishaudio/openaudio-s1-mini --local-dir checkpoints/openaudio-s1-mini
+uvx hf download fishaudio/openaudio-s1-mini --local-dir checkpoints/openaudio-s1-mini
 touch .project-root   # Required by pyrootutils
 ```
 
-You may need to log in first (`huggingface-cli login`) if prompted.
+You may need to log in first (`uvx hf login`) if prompted.
 
 ## Troubleshooting
 

@@ -106,7 +106,7 @@ class ParamsScreen(Screen):
             yield Label("Text to Vocalize", classes="field-label")
             yield TextArea(DEFAULT_TEXT, id="text-input")
             yield Label("Voice Description (for models that support it)", classes="field-label")
-            yield Input(placeholder="e.g. Warm male voice, 30s, american accent", id="description-input")
+            yield Input(placeholder="e.g. Warm male voice, 30s, american accent", id="description-input", value="warm male voice, mid-50s")
             yield Label("Reference Audio path (for models that support it)", classes="field-label")
             yield Input(value="audiosample.wav", placeholder="/path/to/reference.wav", id="reference-input")
             yield Label("Output directory", classes="field-label")
