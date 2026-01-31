@@ -25,7 +25,6 @@ import torch
 
 def generate(text: str, description: str, reference_audio_path: str, output_path: str) -> str:
     from cosyvoice.cli.cosyvoice import CosyVoice2
-    import torchaudio
 
     device = tts_common.get_device()
     print(f"Using device: {device}", file=sys.stderr)
@@ -48,23 +47,19 @@ def generate(text: str, description: str, reference_audio_path: str, output_path
         raise
     load_ms = (time.perf_counter() - t_load) * 1000
 
-    prompt_speech = None
-    if reference_audio_path:
-        print("Loading reference audio...", file=sys.stderr)
-        prompt_speech, _sr = torchaudio.load(reference_audio_path)
-        prompt_speech = torchaudio.functional.resample(prompt_speech, _sr, 16000)
-        # Move reference audio to the same device as the model
-        prompt_speech = prompt_speech.to(device)
+    if not reference_audio_path:
+        print("Error: CosyVoice 2 requires a reference audio file.", file=sys.stderr)
+        sys.exit(1)
+
+    print("Loading reference audio...", file=sys.stderr)
 
     t_infer = time.perf_counter()
     print("Generating speech...", file=sys.stderr)
-    if description and prompt_speech is not None:
-        results = list(model.inference_instruct2(text, description, prompt_speech, stream=False))
-    elif prompt_speech is not None:
-        results = list(model.inference_zero_shot(text, "", prompt_speech, stream=False))
+    # CosyVoice expects a file path, not a pre-loaded tensor
+    if description:
+        results = list(model.inference_instruct2(text, description, reference_audio_path, stream=False))
     else:
-        print("Error: CosyVoice 2 requires a reference audio file.", file=sys.stderr)
-        sys.exit(1)
+        results = list(model.inference_zero_shot(text, "", reference_audio_path, stream=False))
 
     audio = results[0]["tts_speech"].squeeze().cpu().numpy()
     sr = model.sample_rate
