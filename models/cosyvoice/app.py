@@ -26,8 +26,9 @@ import torch
 def generate(text: str, description: str, reference_audio_path: str, output_path: str) -> str:
     from cosyvoice.cli.cosyvoice import CosyVoice2
 
-    device = tts_common.get_device()
-    print(f"Using device: {device}", file=sys.stderr)
+    # CosyVoice has issues with MPS, force CPU for compatibility
+    device = "cpu"
+    print(f"Using device: {device} (MPS not compatible with CosyVoice)", file=sys.stderr)
 
     t_load = time.perf_counter()
     print("Loading CosyVoice 2...", file=sys.stderr)
