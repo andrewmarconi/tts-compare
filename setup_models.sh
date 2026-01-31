@@ -83,6 +83,12 @@ except Exception:
 
     if uv sync 2>&1; then
         echo "  ✓ $model_name ready"
+
+        # Fish Speech requires .project-root file for pyrootutils
+        if [ "$model_name" = "fish_speech" ] && [ ! -f .project-root ]; then
+            echo "  (creating .project-root for pyrootutils)"
+            touch .project-root
+        fi
     else
         echo "  ✗ $model_name failed (see errors above)"
     fi

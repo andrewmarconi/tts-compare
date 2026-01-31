@@ -90,6 +90,26 @@ touch .project-root   # Required by pyrootutils
 
 You may need to log in first (`huggingface-cli login`) if prompted.
 
+## Troubleshooting
+
+### Maya1: "Separator is not found" Error
+
+If Maya1 fails with `Separator is not found, and chunk exceed the limit`, the cached model files are corrupted. Fix by clearing the cache:
+
+```bash
+rm -rf ~/.cache/huggingface/hub/models--maya-research--maya1
+```
+
+Then run `python main.py` again to re-download the model.
+
+### CosyVoice 2: "Separator is not found" Error
+
+Similar to Maya1, corrupted ModelScope cache can be fixed with:
+
+```bash
+rm -rf ~/.cache/modelscope/hub/iic___CosyVoice2-0.5B
+```
+
 ## Documentation
 
 See [docs/](docs/) for detailed documentation:
