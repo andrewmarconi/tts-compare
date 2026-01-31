@@ -27,6 +27,16 @@ PRECISION = torch.bfloat16
 
 
 def generate(text: str, reference_audio_path: str, output_path: str) -> str:
+    # Check if checkpoint exists before attempting to load
+    if not os.path.isdir(CHECKPOINT_PATH):
+        print(f"Error: Fish Speech checkpoint not found at: {CHECKPOINT_PATH}", file=sys.stderr)
+        print("Download the checkpoint and place it in the expected location, or set FISH_CHECKPOINT env var.", file=sys.stderr)
+        sys.exit(1)
+
+    if not os.path.isfile(CODEC_PATH):
+        print(f"Error: Fish Speech codec not found at: {CODEC_PATH}", file=sys.stderr)
+        sys.exit(1)
+
     from fish_speech.models.text2semantic.inference import (
         launch_thread_safe_queue,
     )
