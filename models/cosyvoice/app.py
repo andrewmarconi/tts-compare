@@ -20,11 +20,24 @@ for _p in (_COSYVOICE_ROOT, _MATCHA_TTS):
 
 import numpy as np
 import soundfile as sf
+import torch
+
+
+def _get_device() -> str:
+    """Detect best available device: CUDA > MPS > CPU."""
+    if torch.cuda.is_available():
+        return "cuda"
+    if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
+        return "mps"
+    return "cpu"
 
 
 def generate(text: str, description: str, reference_audio_path: str, output_path: str) -> str:
     from cosyvoice.cli.cosyvoice import CosyVoice2
     import torchaudio
+
+    device = _get_device()
+    print(f"Using device: {device}", file=sys.stderr)
 
     t_load = time.perf_counter()
     print("Loading CosyVoice 2...", file=sys.stderr)
@@ -33,6 +46,9 @@ def generate(text: str, description: str, reference_audio_path: str, output_path
             "iic/CosyVoice2-0.5B",
             load_jit=False, load_trt=False, fp16=False,
         )
+        # Move model to the selected device
+        if hasattr(model, 'to'):
+            model = model.to(device)
     except Exception as e:
         if "Separator is not found" in str(e) or "chunk exceed the limit" in str(e):
             print("Error: Model files appear corrupted. Try re-downloading:", file=sys.stderr)
@@ -46,6 +62,8 @@ def generate(text: str, description: str, reference_audio_path: str, output_path
         print("Loading reference audio...", file=sys.stderr)
         prompt_speech, _sr = torchaudio.load(reference_audio_path)
         prompt_speech = torchaudio.functional.resample(prompt_speech, _sr, 16000)
+        # Move reference audio to the same device as the model
+        prompt_speech = prompt_speech.to(device)
 
     t_infer = time.perf_counter()
     print("Generating speech...", file=sys.stderr)
