@@ -27,4 +27,8 @@ dependencies = [
     "transformers>=4.51.3",
     "x-transformers>=2.11.24",
     "wetext>=0.0.4",
+    "rich>=14.3.1",
+    "wget>=3.2",
+    "pyarrow>=23.0.0",
+    "torchcodec>=0.10.0",
 ]

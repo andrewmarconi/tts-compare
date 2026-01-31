@@ -31,7 +31,7 @@ A side-by-side comparison framework for open-source text-to-speech models. Provi
 
 ```bash
 # Clone with submodules (CosyVoice)
-git clone --recurse-submodules https://github.com/<your-repo>/tts-compare.git
+git clone --recurse-submodules https://github.com/andrewmarconi/tts-compare.git
 cd tts-compare
 
 # Install root dependencies (Textual TUI)

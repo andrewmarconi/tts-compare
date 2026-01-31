@@ -37,9 +37,11 @@ def generate(text: str, description: str, reference_audio_path: str, output_path
             "iic/CosyVoice2-0.5B",
             load_jit=False, load_trt=False, fp16=False,
         )
-        # Move model to the selected device
-        if hasattr(model, 'to'):
-            model = model.to(device)
+        # Force all model parameters to float32 to avoid dtype mismatches on CPU
+        if hasattr(model, 'model'):
+            model.model.llm.to(torch.float32)
+            model.model.flow.to(torch.float32)
+            model.model.hift.to(torch.float32)
     except Exception as e:
         if "Separator is not found" in str(e) or "chunk exceed the limit" in str(e):
             print("Error: Model files appear corrupted. Try re-downloading:", file=sys.stderr)
@@ -52,7 +54,15 @@ def generate(text: str, description: str, reference_audio_path: str, output_path
         print("Error: CosyVoice 2 requires a reference audio file.", file=sys.stderr)
         sys.exit(1)
 
-    print("Loading reference audio...", file=sys.stderr)
+    # Convert to absolute path if needed
+    if not os.path.isabs(reference_audio_path):
+        reference_audio_path = os.path.abspath(reference_audio_path)
+
+    if not os.path.exists(reference_audio_path):
+        print(f"Error: Reference audio file not found: {reference_audio_path}", file=sys.stderr)
+        sys.exit(1)
+
+    print(f"Using reference audio: {reference_audio_path}", file=sys.stderr)
 
     t_infer = time.perf_counter()
     print("Generating speech...", file=sys.stderr)

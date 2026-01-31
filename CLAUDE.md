@@ -87,6 +87,3 @@ Run `uv sync` in the model directory to create its venv.
 - CosyVoice: Uses git submodule (`models/cosyvoice/CosyVoice`)
 - CosyVoice expects file path for reference audio (not pre-loaded tensor)
 
-**Known issues**:
-- Maya1/CosyVoice: SafeTensors corruption during download (run `./fix_safetensors.sh`)
-- Fish Speech and CosyVoice marked as "incomplete" implementations
