@@ -35,6 +35,23 @@ LOG_FILE = Path(__file__).parent / "log.txt"
 
 _RICH_TAG_RE = re.compile(r"\[/?[a-z][a-z0-9_ ]*\]", re.IGNORECASE)
 
+
+def get_next_run_folder(base_dir: Path) -> Path:
+    """Get the next numbered run folder (e.g., 001, 002, 003).
+
+    Looks in base_dir for existing numbered folders and returns the next
+    number in sequence, zero-padded to 3 digits.
+    """
+    base_dir.mkdir(parents=True, exist_ok=True)
+
+    existing_runs = []
+    for item in base_dir.iterdir():
+        if item.is_dir() and item.name.isdigit():
+            existing_runs.append(int(item.name))
+
+    next_num = max(existing_runs, default=0) + 1
+    return base_dir / f"{next_num:03d}"
+
 DEFAULT_TEXT = (
     "Wait—would you believe what just happened? The café served amazing "
     "crème brûlée and fresh croissants while a gentle breeze carried the "
@@ -209,8 +226,12 @@ class ExecutionScreen(Screen):
         assert isinstance(app, TTSCompareApp)
         log = self.query_one("#exec-log", RichLog)
         params = app.global_params
-        output_dir = params.get("output_dir", str(OUTPUT_DIR))
-        Path(output_dir).mkdir(parents=True, exist_ok=True)
+
+        # Create numbered run folder (e.g., output/001, output/002, etc.)
+        base_output_dir = Path(params.get("output_dir", str(OUTPUT_DIR)))
+        run_folder = get_next_run_folder(base_output_dir)
+        run_folder.mkdir(parents=True, exist_ok=True)
+        output_dir = str(run_folder)
 
         logfile = open(LOG_FILE, "w")
 
@@ -220,6 +241,8 @@ class ExecutionScreen(Screen):
             plain = _RICH_TAG_RE.sub("", msg)
             logfile.write(plain + "\n")
             logfile.flush()
+
+        emit(f"[bold]Output folder: {output_dir}[/bold]\n")
 
         results: list[tuple[str, bool, str]] = []
         benchmarks: list[dict] = []
