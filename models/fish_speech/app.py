@@ -5,25 +5,24 @@ Uses the fish_speech Python API directly (no HTTP server needed).
 Requires checkpoint at checkpoints/openaudio-s1-mini/ (or set FISH_CHECKPOINT env var).
 """
 
-import json
 import os
 import sys
 import time
 
-import numpy as np
-import soundfile as sf
+# Add repo root to path to import shared utilities
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_REPO_ROOT = os.path.dirname(os.path.dirname(_HERE))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+import tts_common
 import torch
 
 CHECKPOINT_PATH = os.environ.get(
     "FISH_CHECKPOINT", "checkpoints/openaudio-s1-mini"
 )
 CODEC_PATH = os.path.join(CHECKPOINT_PATH, "codec.pth")
-if torch.cuda.is_available():
-    DEVICE = "cuda"
-elif hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
-    DEVICE = "mps"
-else:
-    DEVICE = "cpu"
+DEVICE = tts_common.get_device()
 PRECISION = torch.bfloat16
 
 
@@ -90,14 +89,11 @@ def generate(text: str, reference_audio_path: str, output_path: str) -> str:
         print("Error: No audio generated.", file=sys.stderr)
         sys.exit(1)
 
-    audio = np.clip(final_audio, -1.0, 1.0)
-    audio = (audio * 32767).astype(np.int16)
-
     infer_ms = (time.perf_counter() - t_infer) * 1000
 
     print("Saving audio...", file=sys.stderr)
-    sf.write(output_path, audio, sample_rate)
-    print(f"TIMING:{json.dumps({'model_load_ms': round(load_ms, 1), 'model_inference_ms': round(infer_ms, 1)})}", file=sys.stderr)
+    tts_common.save_audio(final_audio, sample_rate, output_path)
+    tts_common.emit_timing(load_ms, infer_ms)
     print("Done.", file=sys.stderr)
 
     # Signal the LLM worker thread to stop
@@ -107,7 +103,7 @@ def generate(text: str, reference_audio_path: str, output_path: str) -> str:
 
 
 if __name__ == "__main__":
-    params = json.loads(sys.stdin.read())
+    params = tts_common.read_params()
     path = generate(
         text=params["text"],
         reference_audio_path=params.get("reference_audio_path", ""),

@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
 """Kokoro-82M TTS — reads JSON from stdin, writes WAV to output_path."""
 
-import json
+import os
 import sys
 import time
 
+# Add repo root to path to import shared utilities
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_REPO_ROOT = os.path.dirname(os.path.dirname(_HERE))
+if _REPO_ROOT not in sys.path:
+    sys.path.insert(0, _REPO_ROOT)
+
+import tts_common
 import numpy as np
-import soundfile as sf
 
 SAMPLE_RATE = 24000
 DEFAULT_VOICE = "af_heart"
@@ -34,20 +40,17 @@ def generate(text: str, voice_preset: str, output_path: str) -> str:
         sys.exit(1)
 
     audio = np.concatenate(chunks)
-    audio = np.clip(audio, -1.0, 1.0)
-    audio = (audio * 32767).astype(np.int16)
-
     infer_ms = (time.perf_counter() - t_infer) * 1000
 
     print("Saving audio...", file=sys.stderr)
-    sf.write(output_path, audio, SAMPLE_RATE)
-    print(f"TIMING:{json.dumps({'model_load_ms': round(load_ms, 1), 'model_inference_ms': round(infer_ms, 1)})}", file=sys.stderr)
+    tts_common.save_audio(audio, SAMPLE_RATE, output_path)
+    tts_common.emit_timing(load_ms, infer_ms)
     print("Done.", file=sys.stderr)
     return output_path
 
 
 if __name__ == "__main__":
-    params = json.loads(sys.stdin.read())
+    params = tts_common.read_params()
     path = generate(
         text=params["text"],
         voice_preset=params.get("voice_preset", ""),
