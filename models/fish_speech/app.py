@@ -18,6 +18,11 @@ if _REPO_ROOT not in sys.path:
 import tts_common
 import torch
 
+# Monkey-patch for torchaudio compatibility (list_audio_backends removed in 2.1+)
+import torchaudio
+if not hasattr(torchaudio, 'list_audio_backends'):
+    torchaudio.list_audio_backends = lambda: ['soundfile', 'sox_io']
+
 CHECKPOINT_PATH = os.environ.get(
     "FISH_CHECKPOINT", "checkpoints/openaudio-s1-mini"
 )

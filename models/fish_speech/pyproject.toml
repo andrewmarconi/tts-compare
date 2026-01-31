@@ -7,4 +7,5 @@ dependencies = [
     "soundfile>=0.13.1",
     "numpy",
     "torch",
+    "torchcodec",
 ]

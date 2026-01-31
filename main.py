@@ -351,6 +351,7 @@ class ExecutionScreen(Screen):
             stderr=asyncio.subprocess.PIPE,
             cwd=str(model_dir),
             env=env,
+            limit=1024 * 1024,  # 1 MiB buffer limit (default is 64 KiB)
         )
         # Send input and close stdin
         assert proc.stdin is not None

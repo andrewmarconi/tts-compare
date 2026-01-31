@@ -5,7 +5,7 @@ requires-python = ">=3.12"
 dependencies = [
     "torch>=2.0.0",
     "torchaudio>=2.0.0",
-    "coqui-tts",
+    "coqui-tts[codec]",
     "soundfile>=0.13.1",
     "numpy",
     "numba>=0.60.0",
