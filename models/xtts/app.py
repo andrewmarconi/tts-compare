@@ -14,6 +14,11 @@ SAMPLE_RATE = 24000
 def generate(text: str, reference_audio_path: str, output_path: str) -> str:
     import torch
     from TTS.api import TTS
+    from TTS.utils import manage
+
+    # Monkey-patch TOS acceptance to work in subprocess context (issue #5)
+    # Since stdin is piped for JSON input, input() calls would fail with EOFError
+    manage.ask_tos = lambda model_full_path: True
 
     if not reference_audio_path:
         print("Error: XTTS v2 requires a reference audio file (~6s).", file=sys.stderr)
