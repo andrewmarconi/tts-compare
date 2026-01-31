@@ -39,6 +39,10 @@ uv sync
 
 # Set up all model environments (creates isolated .venv per model)
 ./setup_models.sh
+
+# (Optional) Pre-download model weights to avoid delays during first run
+# This downloads ~15-20 GB of models and takes 10-30 minutes
+./download_models.sh
 ```
 
 ### Run
