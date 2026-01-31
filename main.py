@@ -233,7 +233,9 @@ class ExecutionScreen(Screen):
         run_folder.mkdir(parents=True, exist_ok=True)
         output_dir = str(run_folder)
 
-        logfile = open(LOG_FILE, "w")
+        # Save log file in the run folder
+        log_file_path = run_folder / "log.txt"
+        logfile = open(log_file_path, "w")
 
         def emit(msg: str) -> None:
             """Write to both the TUI RichLog and the plain-text log file."""
